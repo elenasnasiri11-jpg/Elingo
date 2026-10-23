@@ -7,9 +7,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Extract Android project
+        run: |
+          unzip -o Elingo_Android_Project_CloudBuild.zip -d project
+          echo "Project extracted"
+          find project -maxdepth 3 -type f | head -80
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -17,15 +24,21 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-
       - name: Build debug APK
-        run: gradle assembleDebug
+        run: |
+          PROJECT_DIR=$(find project -name settings.gradle -o -name settings.gradle.kts | head -1 | xargs dirname)
+          echo "Project directory: $PROJECT_DIR"
+          cd "$PROJECT_DIR"
+          if [ -f gradlew ]; then
+            chmod +x gradlew
+            ./gradlew assembleDebug
+          else
+            gradle assembleDebug
+          fi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Elingo-APK
-          path: app/build/outputs/apk/debug/*.apk
-          
+          path: project/**/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
