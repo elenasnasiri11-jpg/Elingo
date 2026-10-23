@@ -42,4 +42,4 @@ jobs:
           name: Elingo-APK
           path: project/**/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
-          
+          # Elingo APK build workflow
